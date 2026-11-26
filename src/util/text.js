@@ -2,19 +2,36 @@ import { exposeFn } from '../core/state.js';
 
 export function parseJSON(raw){
   var t = String(raw || "")
+    .replace(/^\uFEFF/, "")
     .replace(/<think>[\s\S]*?<\/think>/gi, "")
     .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/i, "")
+    .replace(/```(?:json)?/gi, "")
+    .replace(/```/g, "")
     .trim();
   try { return JSON.parse(t); } catch(e){}
-  var a = t.indexOf("{"), b = t.indexOf("[");
-  var st = (a === -1) ? b : (b === -1 ? a : Math.min(a, b));
-  if(st > -1){
-    var ec = t[st] === "{" ? "}" : "]";
-    var en = t.lastIndexOf(ec);
-    if(en > st){
-      try { return JSON.parse(t.slice(st, en + 1)); } catch(e2){}
+  /* AI sering menambahkan kalimat pembuka/penutup atau beberapa blok markdown.
+     Ambil kandidat JSON yang benar-benar berimbang, sambil mengabaikan kurung
+     yang berada di dalam string. */
+  for(var st=0; st<t.length; st++){
+    if(t[st] !== "{" && t[st] !== "[") continue;
+    var stack = [], quote = false, escape = false;
+    for(var i=st; i<t.length; i++){
+      var ch = t[i];
+      if(quote){
+        if(escape) escape = false;
+        else if(ch === "\\") escape = true;
+        else if(ch === '"') quote = false;
+        continue;
+      }
+      if(ch === '"'){ quote = true; continue; }
+      if(ch === "{" || ch === "[") stack.push(ch);
+      else if(ch === "}" || ch === "]"){
+        var open = stack.pop();
+        if((ch === "}" && open !== "{") || (ch === "]" && open !== "[")) break;
+        if(!stack.length){
+          try { return JSON.parse(t.slice(st, i + 1)); } catch(e2){ break; }
+        }
+      }
     }
   }
   var err = new Error("Format JSON dari AI tidak valid.");
