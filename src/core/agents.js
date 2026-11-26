@@ -711,7 +711,8 @@ export function posInstr(instr){
   var dna = bc && bc.dna ? bc.dna : {};
   var brief = ($("brief") && $("brief").value) || BB.brief || "";
   return 'Susun LIMA opsi positioning brand pengguna untuk mencongkel kompetitor "' + n + '" pada segmen ' +
-    (BB.segmen || fld("segmen").textContent.trim()) + '. ' + POS() +
+    (BB.segmen || fld("segmen").textContent.trim()) + '. ' + POSX() +
+    ' Gunakan pola jenis produk + keunggulan Ter- + No.1/Pertama/Terbaik + teritori. Jangan menyebut brand atau audiens.' +
     ' Pain konsumen ' + n + ': ' + LST("pain", 5) + '. Positioning kompetitor: ' + (dna.positioning || "") +
     '. Cerita bisnis pengguna: ' + brief + '.' +
     (instr ? '\nInstruksi tambahan: ' + instr : '') +
@@ -1068,7 +1069,7 @@ export function t9Agents(){
     reads:["nama","tagline","warna","kunci","positioning","segmen","user"],
     writes:["logoDraft"],
     rules:["BX:nama","BX:tagline","BX:kunci","BX:positioning","BX:warna","MKT","RUB"],
-    model:{profile:"deep", temp:0.55, maxTokens:1200, reasoning:"low"},
+  model:{profile:"deep", temp:0.55, maxTokens:900, reasoning:"low"},
     schema:{logoDraft:{svg:"string SVG aman", konsep:"string 1-2 kalimat maksimal 200 karakter"}},
     validate:logoSVGViolations
   });
@@ -1078,7 +1079,7 @@ export function t9Agents(){
     reads:["comp"],
     writes:["logoInfo"],
     rules:["MKT"],
-    model:{profile:"vision", temp:0.2, maxTokens:700, reasoning:"none"},
+  model:{profile:"vision", temp:0.2, maxTokens:500, reasoning:"none"},
     schema:{teks_utama:"string", tagline_di_logo:"string", deskripsi_visual:"string maksimal 300 karakter"},
     validate:logoInfoViolations
   });
@@ -1402,7 +1403,7 @@ defAgent("competitor", {
   reads: ["brief", "nama_kompetitor"],
   writes: ["compDraft.fakta"],
   rules: ["BX:kompetitor"],
-  model: {profile:"search", temp:0.2, maxTokens:1400, reasoning:"low"},
+  model: {profile:"search", temp:0.2, maxTokens:1100, reasoning:"low"},
   schema: {compDraft:{fakta:{entitas:"string", model_bisnis:"string", produk_utama:"string", rentang_harga:"string", c1:"hex", c2:"hex", font:"string", tagline_asli:"string", tagline_asli_ditemukan:"boolean", kunci_asli:"2 kata", web:"string", instagram:"string", kompetitor_langsung:"string", kompetitor_web:"string", kompetitor_ig:"string"}}},
   validate: competitorFactsViolations
 });
@@ -1413,7 +1414,7 @@ defAgent("competitor-core", {
   reads: ["brief", "nama_kompetitor", "compDraft.fakta"],
   writes: ["compDraft.core"],
   rules: ["BX:pain", "BX:gain", "BX:segmen", "RUB"],
-  model: {profile:"deep", temp:0.3, maxTokens:1600, reasoning:"low"},
+  model: {profile:"deep", temp:0.3, maxTokens:1300, reasoning:"low"},
   schema: {compDraft:{core:{pain:"5 string", gain:"5 string", segmen_skor:"7 indikator", segmen:"ATAS/BAWAH", gender:"WANITA/PRIA", usertitle:"string", usia:"string", usersub:"string", meja:"7 string"}}},
   validate: competitorCoreViolations
 });
@@ -1424,7 +1425,7 @@ defAgent("competitor-ident", {
   reads: ["brief", "nama_kompetitor", "compDraft.fakta", "compDraft.core"],
   writes: ["compDraft.ident"],
   rules: ["BX:positioning", "BX:tagline", "BX:kunci", "BX:warna", "MKT"],
-  model: {profile:"deep", temp:0.3, maxTokens:1400, reasoning:"low"},
+  model: {profile:"deep", temp:0.3, maxTokens:1100, reasoning:"low"},
   schema: {compDraft:{ident:{positioning:"string", dasar:"string", tagline:"string", hashtag:"5 string", kunci:"2 kata", kompetitor:"string", kompetitor_web:"string", kompetitor_ig:"string", c1:"hex", c2:"hex", font:"string", web:"string", instagram:"string", keyakinan:"string", catatan:"string"}}},
   validate: competitorIdentViolations
 });
@@ -1455,7 +1456,7 @@ defAgent("segment", {
   role:"analis segmen kompetitor",
   persona:"Strategi branding Indonesia yang membuktikan segmen lewat skor indikator yang jujur.",
   reads:["comp","brief"], writes:["segmen_skor"], rules:["BX:segmen","RUB"],
-  model:{profile:"deep", temp:0.15, maxTokens:900, reasoning:"low"},
+  model:{profile:"deep", temp:0.15, maxTokens:700, reasoning:"low"},
   schema:{segmen_skor:"7 indikator {skor:1-5, alasan:string}"},
   validate:segmentViolations
 });
@@ -1464,7 +1465,7 @@ defAgent("persona", {
   role:"perancang profil pembeli",
   persona:"Konsultan branding Indonesia yang merangkai satu user spesifik dari rumus lima komponen.",
   reads:["comp","gain","segmen"], writes:["user"], rules:["BX:user","MKT","RUB"],
-  model:{profile:"deep", temp:0.3, maxTokens:900, reasoning:"low"},
+  model:{profile:"deep", temp:0.3, maxTokens:700, reasoning:"low"},
   schema:{user:{persona:{gender:"string",pekerjaan:"string",lifestyle:"string",harapan:"string",performa:"string"},usertitle:"string",usia:"string",usersub:"string"}},
   validate:personaUserViolations
 });
@@ -1473,7 +1474,7 @@ defAgent("persona-options", {
   role:"perancang alternatif profil pembeli",
   persona:"Konsultan branding Indonesia yang menyusun lima user spesifik berbeda untuk dibandingkan.",
   reads:["comp","gain","segmen","user"], writes:["opsi"], rules:["BX:user","MKT"],
-  model:{profile:"deep", temp:0.3, maxTokens:900, reasoning:"low"},
+  model:{profile:"deep", temp:0.3, maxTokens:650, reasoning:"low"},
   schema:{opsi:"5 objek {usertitle,usia,usersub}"},
   validate:personaOptionsViolations
 });
@@ -1482,7 +1483,7 @@ defAgent("arena", {
   role:"perancang meja perdebatan pembeli",
   persona:"Peneliti perilaku konsumen Indonesia yang memetakan tujuh tempat berkumpul pembeli.",
   reads:["user","segmen","jam"], writes:["meja"], rules:["BX:meja","MKT"],
-  model:{profile:"deep", temp:0.25, maxTokens:700, reasoning:"low"},
+  model:{profile:"deep", temp:0.25, maxTokens:550, reasoning:"low"},
   schema:{meja:"7 string maksimal 8 kata"},
   validate:arenaViolations
 });
@@ -1491,7 +1492,7 @@ defAgent("positioning", {
   role:"copywriter positioning brand",
   persona:"Strategi branding Indonesia yang merangkai lima positioning pendek dan tajam.",
   reads:["gain","user","meja","jam"], writes:["positioning"], rules:["MKT","BX:positioning"],
-  model:{profile:"deep", temp:0.25, maxTokens:900, reasoning:"medium"},
+  model:{profile:"deep", temp:0.25, maxTokens:650, reasoning:"low"},
   schema:{positioning:"5 objek {teks,dasar}"},
   validate:positioningT7Violations
 });
@@ -1502,7 +1503,7 @@ defAgent("tagline", {
   reads:["comp","positioning","gain","user","meja"],
   writes:["verbalDraft"],
   rules:["BX:tagline","MKT"],
-  model:{profile:"creative", temp:0.85, maxTokens:600, reasoning:"low"},
+  model:{profile:"creative", temp:0.85, maxTokens:500, reasoning:"low"},
   schema:{verbalDraft:{tagline:"5 objek {tagline,forum}"}},
   validate:taglineViolations
 });
@@ -1513,7 +1514,7 @@ defAgent("nama", {
   reads:["comp","positioning","tagline","user"],
   writes:["verbalDraft"],
   rules:["BX:nama","MKT"],
-  model:{profile:"creative", temp:0.85, maxTokens:500, reasoning:"none"},
+  model:{profile:"creative", temp:0.85, maxTokens:400, reasoning:"none"},
   schema:{verbalDraft:{nama:"5 objek {nama,level,batin}"}},
   validate:namaViolations
 });
@@ -1524,7 +1525,7 @@ defAgent("kunci", {
   reads:["positioning","tagline","nama","gain","user"],
   writes:["verbalDraft"],
   rules:["BX:kunci","MKT"],
-  model:{profile:"creative", temp:0.85, maxTokens:500, reasoning:"none"},
+  model:{profile:"creative", temp:0.85, maxTokens:350, reasoning:"none"},
   schema:{verbalDraft:{kunci:"5 objek {kunci}"}},
   validate:kunciViolations
 });
@@ -1535,7 +1536,7 @@ defAgent("warna", {
   reads:["user","segmen","positioning","nama"],
   writes:["visualDraft"],
   rules:["BX:warna","MKT"],
-  model:{profile:"fast", temp:0.3, maxTokens:700, reasoning:"low"},
+  model:{profile:"fast", temp:0.3, maxTokens:550, reasoning:"low"},
   schema:{visualDraft:{warna:"5 objek {c1,c2,filw}"}},
   validate:warnaViolations
 });
@@ -1546,7 +1547,7 @@ defAgent("font", {
   reads:["user","segmen","positioning","warna"],
   writes:["visualDraft"],
   rules:["BX:font","MKT"],
-  model:{profile:"fast", temp:0.3, maxTokens:600, reasoning:"none"},
+  model:{profile:"fast", temp:0.3, maxTokens:450, reasoning:"none"},
   schema:{visualDraft:{font:"5 objek {font,filf}"}},
   validate:fontViolations
 });
