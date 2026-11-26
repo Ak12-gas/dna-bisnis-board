@@ -1,0 +1,16 @@
+# Local secrets and editor files
+.env
+.env.*
+*.key
+*.pem
+.vscode/
+
+# Local audit/build output
+security-audit-skill/
+dist/
+build/
+node_modules/
+
+# OS files
+Thumbs.db
+.DS_Store
