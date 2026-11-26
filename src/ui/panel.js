@@ -366,7 +366,8 @@ export async function genOpts(k, keep){
   }
   if(k === "nama"){
     try {
-      var na = await mkNames(""), cn = fld("nama").textContent.trim(), sn = {};
+      var avoidNames = [fld("nama").textContent.trim()].concat((OPT.nama.l || []).map(function(x){ return x && x.nama || ""; })).filter(Boolean);
+      var na = await mkNames("Buat set nama baru yang berbeda total. Jangan gunakan atau memodifikasi nama-nama ini: " + JSON.stringify(avoidNames) + ".", true), cn = fld("nama").textContent.trim(), sn = {};
       sn[cn.toLowerCase()] = 1;
       S.l = (keep || []).concat(na).filter(function(x){
         var q = x.nama.toLowerCase();
@@ -407,10 +408,11 @@ export async function genOpts(k, keep){
 export async function mkNames(instr, force){
   /* === T8 HOOK: mkNames === */ if(BB.flags && BB.flags.t8) return mkNamesAgent(instr, force);
   var n = comp ? comp.name : "kompetitor", s = await getAI();
+  var avoidNames = [fld("nama").textContent.trim()].concat((OPT.nama && OPT.nama.l || []).map(function(x){ return x && x.nama || ""; })).filter(Boolean);
   var lim = await s.limits().catch(function(){ return {}; });
   var o = {cache:false};
   if(lim.modelTiers && lim.modelTiers.indexOf("complex") > -1) o.modelTier = "complex";
-  var r = await s.json('Kamu konsultan branding senior dan naming specialist di Indonesia. Susun 5 NAMA BRAND untuk brand pengguna yang akan mencongkel "' + n + '". LEVEL 1: kata/frasa pendek yang terucap di batin user saat momen butuh (mis. BeliKopi, Haus). LEVEL 2: jenis produk + vokal keren atau imbuhan ku/mu/kita/in/aja (mis. Jussy, JusKu, Jus.in).' + ctx() + ' Isi board: ' + KN() + '. Rencana owner: ' + OW() + '. Cerita bisnis: ' + $("brief").value + '. Maksimal 2 kata, tidak menyebut kompetitor.' + (instr ? ' Instruksi tambahan: ' + instr + '.' : '') + ' Jawab HANYA JSON array berisi 5 objek {"nama":"","level":1,"batin":"kalimat batin user Bahasa Indonesia"}.', o);
+  var r = await s.json('Kamu konsultan branding senior dan naming specialist di Indonesia. Susun 5 NAMA BRAND untuk brand pengguna yang akan mencongkel "' + n + '". Buat nama yang beragam dan tidak monoton: gunakan lima arah berbeda (1 kata coined modern, kata sensorik/emosional, istilah lokal yang relevan, gabungan dua kata yang kuat, dan nama singkat premium). Jangan membuat semua nama hanya variasi jenis produk + akhiran ku/mu/kita/in/aja. LEVEL 1: kata/frasa pendek yang terucap di batin user saat momen butuh. LEVEL 2: nama coined atau gabungan bunyi yang mudah diucapkan.' + ctx() + ' Isi board: ' + KN() + '. Rencana owner: ' + OW() + '. Cerita bisnis: ' + $("brief").value + '. Maksimal 2 kata, tidak menyebut kompetitor. Nama yang wajib dihindari: ' + JSON.stringify(avoidNames) + '.' + (instr ? ' Instruksi tambahan: ' + instr + '.' : '') + ' Jawab HANYA JSON array berisi 5 objek {"nama":"","level":1,"batin":"kalimat batin user Bahasa Indonesia"}.', o);
   var a = Array.isArray(r) ? r : (r && Array.isArray(r.nama) ? r.nama : []);
   a = a.map(function(x){
     var nm = String(x && x.nama || "").trim();

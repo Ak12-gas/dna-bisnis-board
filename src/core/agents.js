@@ -904,8 +904,8 @@ export async function kunciOptsAgent(keep){
   return a;
 }
 
-export async function verbalRec(key, instr){
-  var a = verbalPart(await verbalAgent(key, instr == null ? "" : instr), key);
+export async function verbalRec(key, instr, force){
+  var a = verbalPart(await verbalAgent(key, instr == null ? "" : instr, !!force), key);
   if(!a.length) throw new Error("Hasil verbal kosong untuk " + key + ".");
   var first = a[0], val = first[key];
   t8FillField(key, val);
@@ -950,6 +950,10 @@ export async function t8GenOpts(k, keep){
 
 export async function t8UseRec(k){
   if(k === "kunci"){ await verbalRec("kunci", ""); return true; }
+  if(k === "nama"){
+    await verbalRec("nama", "Buat lima nama yang berbeda total satu sama lain. Gunakan lima arah berbeda: coined modern, sensorik/emosional, lokal relevan, gabungan dua kata, dan singkat premium. Jangan mengulang nama dari hasil sebelumnya.", true);
+    return true;
+  }
   if(k === "warna" || k === "font"){ return !!(await visualRec(k, "")); }
   if(k === "web"){ await webAgent(); return true; }
   return false;
