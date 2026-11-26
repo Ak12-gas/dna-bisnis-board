@@ -10,6 +10,13 @@ export var T10_BOX_AGENT = {
 
 export var T10_APPROVE = {kompetitor:1, positioning:1, nama:1};
 
+/* Pastikan wadah opsi selalu tersedia sebelum tombol kunci mereset pilihan lama. */
+OK.forEach(function(k){
+  if(!OPT[k] || typeof OPT[k] !== "object") OPT[k] = {l:[], busy:false};
+  if(!Array.isArray(OPT[k].l)) OPT[k].l = [];
+  OPT[k].busy = !!OPT[k].busy;
+});
+
 export var OWL = ["Jenis Produk","Kemasan","Harga","Distribusi","Lokasi Jual","Jam Buka","Metode Bayar","Target Teritori"];
 
 export var BPL = ["Gender","Usia","Pekerjaan / Profil","Gaya Hidup / Kebiasaan","Ritual Harian","Masalah","Solusi","Dampak"];
@@ -965,7 +972,12 @@ $("mx").onclick = function(){
     started.user = false; conf.user = false;
     started.positioning = false; conf.positioning = false; posAuto = false;
     posOpts = []; posDasar = ""; userOpts = [];
-    OK.forEach(function(k){ OPT[k].l = []; renderOpts(k); });
+    OK.forEach(function(k){
+      if(!OPT[k] || typeof OPT[k] !== "object") OPT[k] = {l:[], busy:false};
+      if(!Array.isArray(OPT[k].l)) OPT[k].l = [];
+      OPT[k].l = [];
+      renderOpts(k);
+    });
     fld("segmen").textContent = "";
     fld("positioning").textContent = "";
     [1,2,3,4,5].forEach(function(i){ fld("pain"+i).textContent = ""; fld("gain"+i).textContent = ""; });
