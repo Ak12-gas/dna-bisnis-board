@@ -621,8 +621,10 @@ export function personaInstr(instr){
 
 export function personaOptsInstr(){
   var c = personaCtx(), cur = t7UserOpt({usertitle:fld("usertitle").textContent, usia:fld("usia").textContent, usersub:fld("usersub").textContent});
+  var existing = (userOpts || []).map(t7UserOpt).filter(function(x){ return x.t || x.u || x.s; });
   return 'Beri LIMA user spesifik berbeda untuk brand pengguna yang akan mencongkel kompetitor "' + c.n + '" pada SEGMEN ' + c.sg + '.' +
-    ' Cerita bisnis pengguna: ' + c.brief + '. Hindari: ' + JSON.stringify(cur) + '.' +
+    ' Cerita bisnis pengguna: ' + c.brief + '. Hindari user yang sama atau hanya mengganti sinonim dari daftar berikut: ' + JSON.stringify([cur].concat(existing)) + '.' +
+    ' Setiap opsi wajib berbeda minimal pada DUA sumbu: pekerjaan/profil, gaya hidup atau kebiasaan, harapan/impian, dan performa/aktivitas terbaik. Jangan membuat lima variasi dari pekerjaan, kebiasaan, atau tujuan yang sama.' +
     ' Jawab HANYA JSON {"opsi":[{"usertitle":"","usia":"","usersub":""}, ... 5 objek]}.' +
     ' usertitle dan usia huruf kapital; usersub tiga bagian dipisah koma, maksimal 14 kata, 100% Bahasa Indonesia, tanpa duplikat.';
 }

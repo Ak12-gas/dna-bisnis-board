@@ -222,7 +222,10 @@ export function applyUser(r){
   var P = r.persona || {};
   BPK.forEach(function(k, i){
     var el = $("bp"+(i+1));
-    if(el && !el.value.trim() && P[k]) el.value = String(P[k]);
+    /* Persona baru harus menggantikan detail persona lama. Sebelumnya hanya
+       field kosong yang diisi sehingga ringkasan user berubah, tetapi gender,
+       pekerjaan, gaya hidup, harapan, dan performa tetap memakai persona lama. */
+    if(el && P[k]) el.value = String(P[k]);
   });
   fld("usertitle").textContent = withGender(r.usertitle, P.gender);
   fld("usia").textContent = String(r.usia || "").toUpperCase();
