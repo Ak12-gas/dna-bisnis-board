@@ -281,10 +281,19 @@ export function loadDraft(){
 }
 
 export function resetDraft(){
+  if(typeof window !== "undefined" && typeof window.confirm === "function" &&
+     !window.confirm("Mulai sesi baru? Draft board saat ini akan dihapus, tetapi API key tetap tersimpan.")) return false;
   clearTimeout(saveTimer);
   saveTimer = null;
   try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  /* Reset memory juga, bukan hanya storage; jika tidak, state lama bisa tersimpan
+     kembali oleh listener input/click sebelum pengguna memulai sesi baru. */
+  if(typeof window !== "undefined" && window.location && typeof window.location.reload === "function"){
+    window.location.reload();
+    return true;
+  }
   toast("Draft dihapus.");
+  return true;
 }
 
 export function t12Sanitize(v, depth, seen){

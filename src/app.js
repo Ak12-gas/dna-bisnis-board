@@ -43,7 +43,7 @@ function t12Boot(){
   if(row && !document.getElementById("t12Save")) row.insertAdjacentHTML("beforeend",
     '<button type="button" id="t12Save" data-html2canvas-ignore>💾 Simpan progres</button>' +
     '<button type="button" id="t12Load" data-html2canvas-ignore>📂 Muat progres</button>' +
-    '<button type="button" id="draftReset" data-html2canvas-ignore>♻ Reset draft</button>' +
+    '<button type="button" id="draftReset" data-html2canvas-ignore>♻ Sesi baru</button>' +
     '<input type="file" id="t12File" accept="application/json,.json" hidden data-html2canvas-ignore>');
   var fileInput = document.getElementById("t12File");
   if(fileInput && fileInput.addEventListener) fileInput.addEventListener("change", function(ev){
