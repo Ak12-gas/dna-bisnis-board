@@ -133,7 +133,11 @@ export function providerHttpError(providerId, resp, detail){
   var err = new Error(msg);
   err.status = resp.status;
   err.headers = responseHeaders(resp);
-  if(resp.status === 429) err.code = "rate_limited";
+  if(resp.status === 429){
+    err.code = "rate_limited";
+    var retryText = String(detail || "").match(/(?:try again in|retry after)\s*([0-9]+(?:\.[0-9]+)?)\s*s/i);
+    if(retryText) err.retryAfterMs = Math.min(60000, Math.max(1000, Math.ceil(Number(retryText[1]) * 1000)));
+  }
   return err;
 }
 
@@ -436,6 +440,10 @@ export async function aiCall(prompt, opts, asJson){
     } catch(e){
       if(isAbort(e)) throw e;
       lastErr = e;
+      if(e && e.code === "rate_limited" && e.retryAfterMs && i === 0){
+        await new Promise(function(resolve){ setTimeout(resolve, e.retryAfterMs); });
+        continue;
+      }
       if(e && (e.code === "rate_limited" || e.status === 401)) break;
     }
   }

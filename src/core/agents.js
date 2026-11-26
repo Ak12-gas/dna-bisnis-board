@@ -168,6 +168,10 @@ export async function runAgent(id, instr, opts){
         prompt = buildPrompt(spec, BB, baseInstr + "\nPerbaiki JSON sebelumnya. Pelanggaran: " + lastErrs.join(" | "));
         continue;
       }
+      if(e && e.code === "rate_limited" && e.retryAfterMs && attempt < 3){
+        await new Promise(function(resolve){ setTimeout(resolve, e.retryAfterMs); });
+        continue;
+      }
       throw e;
     }
     lastErrs = spec.validate(out, BB) || [];
