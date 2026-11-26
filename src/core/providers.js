@@ -331,7 +331,12 @@ export function aiKeyTersimpan(){ return !!activeProvider(); }
 
 export function syncKeyButton(){
   var b = $("openKeys");
-  if(b) b.style.display = activeProvider() ? "none" : "";
+  if(b){
+    /* Tombol tetap tersedia agar pengguna dapat mengganti/memeriksa provider
+       tanpa harus menghapus API key yang sudah tersimpan terlebih dahulu. */
+    b.style.display = "";
+    b.textContent = activeProvider() ? "🔑 Kelola AI" : "🔑 Kunci AI";
+  }
 }
 
 export function keyModalOpen(){
