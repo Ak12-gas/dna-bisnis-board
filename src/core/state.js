@@ -143,6 +143,10 @@ export function resolveModels(profile, activeIds, avoid){
   pats.forEach(function(rx){
     activeIds.forEach(function(id){
       if(!id || out.indexOf(id) >= 0) return;
+      /* Gemini masih dapat mengembalikan ID lama yang sudah tidak tersedia
+         untuk akun baru. Jangan pilih model legacy ini walau /models masih
+         menampilkannya. */
+      if(/gemini-2\.5-flash/i.test(id)) return;
       if(skip.indexOf(id) >= 0 || DEAD_MODELS[id]) return;
       if(rx.test(id)) out.push(id);
     });

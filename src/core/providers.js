@@ -65,7 +65,11 @@ export async function fetchWithTimeout(url, opts, ms){
 export function allChatModels(activeIds){
   return (activeIds || []).filter(function(id){
     if(!id || DEAD_MODELS[id]) return false;
-    if(/whisper|tts|embed|guard|moderation/i.test(id)) return false;
+    /* Groq /models juga mengembalikan model audio dan utilitas. Model-model
+       tersebut bukan target yang valid untuk /chat/completions aplikasi ini.
+       Orpheus khususnya dapat lolos dari pemeriksaan "tts" karena ID-nya
+       memakai nama vendor, lalu menghasilkan HTTP 400 terms acceptance. */
+    if(/whisper|tts|embed|guard|moderation|orpheus|audio|speech|gemini-2\.5-flash/i.test(id)) return false;
     if(/vision|-vl/i.test(id)) return false;
     return true;
   });
@@ -408,7 +412,10 @@ export async function aiCall(prompt, opts, asJson){
   /* === T3 HOOK === */ if(typeof BUDGET !== "undefined") candidates = await BUDGET.prepare(prov, candidates, prompt, opts.maxTokens != null ? opts.maxTokens : 3500);
   if(useVision && !candidates.length) throw new Error("vision_unavailable");
   if(!candidates.length){
-    candidates = models.filter(function(id){ return !!id && !DEAD_MODELS[id]; });
+    /* Jangan mengembalikan model audio/utilitas ke jalur chat sebagai
+       fallback. Sebelumnya fallback ini memasukkan kembali Orpheus setelah
+       ranking gagal, sehingga request berakhir pada HTTP 400 terms acceptance. */
+    candidates = allChatModels(models);
   }
   if(!candidates.length) throw new Error("Tidak ada model aktif yang tersedia di provider " + prov + ".");
 

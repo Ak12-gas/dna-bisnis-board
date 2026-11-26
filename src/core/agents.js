@@ -391,7 +391,7 @@ export async function caAgent(b, m, n){
 
     m.textContent = "Riset tahap 1/2: pain, gain, segmen, user, meja…";
     var pCore = baseFactPrompt +
-      '\nKerjakan untuk brand "' + n + '" dalam 100% Bahasa Indonesia: pain (5 kekhawatiran nyata konsumen, maks 9 kata), gain (5 value unggul mirror pain, maks 9 kata), segmen_skor (objek harga/higienitas/kemasan/iklan/tempat/angle/dayabeli, tiap {"skor":1-5,"alasan":"fakta singkat"}), segmen (ATAS/BAWAH), gender (WANITA atau PRIA), usertitle (diawali gender lalu pekerjaan/profil, mis. WANITA KARIR), usia ("USIA XX - XX TAHUN"), usersub (3 bagian dipisah koma), dan meja (7 forum nyata).';
+      '\nKerjakan untuk brand "' + n + '" dalam 100% Bahasa Indonesia: pain (5 kekhawatiran nyata konsumen, maks 9 kata), gain (5 value unggul mirror pain, maks 9 kata), segmen_skor (objek dengan key PERSIS harga/higienitas/kemasan/iklan/tempat/angle/dayabeli, tiap {"skor":1-5,"alasan":"fakta singkat"}), segmen (ATAS/BAWAH), gender (WANITA atau PRIA), usertitle (diawali gender lalu pekerjaan/profil, mis. WANITA KARIR), usia ("USIA XX - XX TAHUN"), usersub (3 bagian dipisah koma), dan meja (7 forum nyata). Jangan memakai label panjang, jangan memakai markdown, dan jangan membungkus segmen_skor dalam array atau key lain.';
     var rc = await runAgent("competitor-core", pCore);
     if(!rc || !rc.out || !rc.out.compDraft || !rc.out.compDraft.core) throw caErr("competitor-core", "Inti DNA kompetitor tidak lengkap");
     var core = rc.out.compDraft.core;

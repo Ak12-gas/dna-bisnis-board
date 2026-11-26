@@ -145,7 +145,11 @@ export function applyLock(){
     pb.hidden = !sh;
     if(!sh) $("plist").hidden = true;
   }
-  if(f === idx("positioning") && !started.positioning && !posAuto){
+  /* Draft lama bisa menyimpan started.positioning=true sementara field
+     positioning masih kosong. Dalam kondisi itu guard lama menganggap proses
+     sudah dimulai dan tidak pernah memanggil generator otomatis. */
+  var posFieldEmpty = !fld("positioning").textContent.trim();
+  if(f === idx("positioning") && posFieldEmpty && !posAuto){
     posAuto = true;
     started.positioning = true;
     autoPos();
@@ -197,13 +201,13 @@ export function segScore(o, forcedSeg){
     try { o = JSON.parse(o); } catch(e){ o = null; }
   }
   var raw = o, aliases = {
-    harga:"harga", hargaperporsivolume:"harga", hargapervolume:"harga",
-    higienitas:"higienitas", kebersihan:"higienitas", kepercayaanmerek:"higienitas", higienitaskepercayaanmerek:"higienitas", higienitasdankepercayaanmerek:"higienitas",
+    harga:"harga", hargaporsi:"harga", hargaperporsivolume:"harga", hargapervolume:"harga", hargaperporsidanvolume:"harga",
+    higienitas:"higienitas", kebersihan:"higienitas", kepercayaanmerek:"higienitas", higienitaskepercayaanmerek:"higienitas", higienitasdankepercayaanmerek:"higienitas", higienitasdankepercayaan:"higienitas",
     kemasan:"kemasan", penyajian:"kemasan", kemasanpenyajian:"kemasan", kemasandanpenyajian:"kemasan",
     iklan:"iklan", viralitas:"iklan", iklanviralitas:"iklan", iklandanviralitas:"iklan",
-    tempat:"tempat", outlet:"tempat", jaringanoutlet:"tempat", tempatjualjaringanoutlet:"tempat",
+    tempat:"tempat", outlet:"tempat", jaringanoutlet:"tempat", tempatjual:"tempat", tempatjualjaringanoutlet:"tempat",
     angle:"angle", dayatarik:"angle", angledayatarik:"angle",
-    dayabeli:"dayabeli", dayapelitarget:"dayabeli", dayabelitarget:"dayabeli"
+    dayabeli:"dayabeli", dayapeli:"dayabeli", dayapelitarget:"dayabeli", dayabelitarget:"dayabeli", dayabeliditarget:"dayabeli"
   };
   function keyOf(k){
     var clean = String(k == null ? "" : k).toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -213,6 +217,13 @@ export function segScore(o, forcedSeg){
     if(!x || typeof x !== "object") return;
     var name = keyOf(k || x.k || x.key || x.nama || x.indikator || x.label || x.name);
     if(name) o[name] = x;
+  }
+  function scoreOf(x){
+    if(x && typeof x === "object") x = x.skor != null ? x.skor : (x.score != null ? x.score : (x.nilai != null ? x.nilai : x.value));
+    if(typeof x === "number") return x;
+    var s = String(x == null ? "" : x).trim().replace(",", ".");
+    var m = /^(1|2|3|4|5)(?:\s*(?:\/|dari)\s*5)?$/i.exec(s);
+    return m ? Number(m[1]) : Number(s);
   }
   if(Array.isArray(raw)){
     o = {};
@@ -231,10 +242,9 @@ export function segScore(o, forcedSeg){
   }
   var rows = [], sum = 0;
   RK.forEach(function(k){
-    var x = o && o[k], v = x && typeof x === "object" ? (x.skor != null ? x.skor : x.score) : x;
-    var n = Number(v);
+    var x = o && o[k], n = scoreOf(x);
     if(n >= 1 && n <= 5){
-      rows.push({k:k, n:n, a:(x && typeof x === "object" ? x.alasan : "") || ""});
+      rows.push({k:k, n:n, a:(x && typeof x === "object" ? (x.alasan || x.reason || x.penjelasan || x.justifikasi) : "") || ""});
       sum += n;
     }
   });

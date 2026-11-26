@@ -482,7 +482,10 @@ export function webOpts(){
 export function hashify(t){
   t = String(t || "").trim();
   if(!t) return "";
-  if(t[0] === "#") return t;
+  /* AI kadang mengembalikan "#Jus Gula!" walaupun diminta camelCase.
+     Normalisasi tetap dilakukan meski sudah diawali # agar hasil akhir
+     selalu satu token hashtag tanpa spasi. */
+  t = t.replace(/^#+/, "").replace(/!+$/, "");
   return "#" + t.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).map(function(w){
     return w[0].toUpperCase() + w.slice(1);
   }).join("") + "!";
@@ -505,7 +508,11 @@ export async function mkTags(instr, force){
 }
 
 export function setTags(a){
-  var c = fld("tagline").textContent.trim(), best = a[0], seen = {};
+  a = (a || []).map(function(x){
+    return x ? {tagline: hashify(x.tagline), alasan: x.alasan || ""} : null;
+  }).filter(function(x){ return x && x.tagline; });
+  var c = hashify(fld("tagline").textContent.trim()), best = a[0], seen = {};
+  if(!best) return;
   seen[best.tagline.toLowerCase()] = 1;
   OPT.tagline.l = (c ? [{tagline:c, alasan:tagSim}] : []).concat(a.slice(1), OPT.tagline.l).filter(function(x){
     var q = x.tagline.toLowerCase();
@@ -767,7 +774,12 @@ export async function t10BoxRun(k, nama){
     t10Status("READY", "");
     if(k === "nama" && !conf.warna){
       /* ponytail: hanya jalur tombol papan; auto-pilot t10Loop sudah menggendong kotak berikutnya. */
-      setTimeout(function(){ if(conf.nama && !conf.warna) t10BoxRun("warna"); }, 950);
+      setTimeout(function(){
+        if(!conf.nama || conf.warna) return;
+        var colorBox = document.querySelector('.bx[data-k="warna"]');
+        if(colorBox) colorBox.scrollIntoView({behavior:"smooth", block:"center"});
+        t10BoxRun("warna");
+      }, 950);
     }
     autoAdv(k);
   } catch(e){ t10Status("FAILED", String((e && e.message) || e || "agen gagal.")); }
