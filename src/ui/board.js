@@ -192,21 +192,42 @@ export function onAll12Done(){
 }
 
 export function segScore(o, forcedSeg){
-  /* ponytail: AI kadang mengirim objek sebagai string/array/kunci kapital/skor datar; normalkan di sini agar semua pemanggil aman. Tambah alias bila ada bentuk baru. */
+  /* AI kadang mengirim objek sebagai string/array/kunci kapital/skor datar; normalkan di sini agar semua pemanggil aman. */
   if(typeof o === "string"){
     try { o = JSON.parse(o); } catch(e){ o = null; }
   }
-  var raw = o;
+  var raw = o, aliases = {
+    harga:"harga", hargaperporsivolume:"harga", hargapervolume:"harga",
+    higienitas:"higienitas", kebersihan:"higienitas", kepercayaanmerek:"higienitas", higienitaskepercayaanmerek:"higienitas", higienitasdankepercayaanmerek:"higienitas",
+    kemasan:"kemasan", penyajian:"kemasan", kemasanpenyajian:"kemasan", kemasandanpenyajian:"kemasan",
+    iklan:"iklan", viralitas:"iklan", iklanviralitas:"iklan", iklandanviralitas:"iklan",
+    tempat:"tempat", outlet:"tempat", jaringanoutlet:"tempat", tempatjualjaringanoutlet:"tempat",
+    angle:"angle", dayatarik:"angle", angledayatarik:"angle",
+    dayabeli:"dayabeli", dayapelitarget:"dayabeli", dayabelitarget:"dayabeli"
+  };
+  function keyOf(k){
+    var clean = String(k == null ? "" : k).toLowerCase().replace(/[^a-z0-9]+/g, "");
+    return aliases[clean] || clean;
+  }
+  function add(x, k){
+    if(!x || typeof x !== "object") return;
+    var name = keyOf(k || x.k || x.key || x.nama || x.indikator || x.label || x.name);
+    if(name) o[name] = x;
+  }
   if(Array.isArray(raw)){
     o = {};
-    raw.forEach(function(x){
-      if(!x || typeof x !== "object") return;
-      var k = String(x.k || x.key || x.nama || x.indikator || "").toLowerCase().replace(/[\s_-]+/g, "");
-      if(k) o[k] = x;
-    });
+    raw.forEach(function(x){ add(x); });
   } else if(raw && typeof raw === "object"){
+    /* Be tolerant of common wrappers: {scores: {...}}, {indikator: [...]}, or {data: {...}}. */
+    var wrapped = raw.segmen_skor || raw.scores || raw.score || raw.indikator || raw.data || raw.items;
+    if(wrapped && wrapped !== raw && (Array.isArray(wrapped) || typeof wrapped === "object")) raw = wrapped;
     o = {};
-    Object.keys(raw).forEach(function(k){ o[String(k).toLowerCase().replace(/[\s_-]+/g, "")] = raw[k]; });
+    if(Array.isArray(raw)) raw.forEach(function(x){ add(x); });
+    else Object.keys(raw).forEach(function(k){
+      var v = raw[k];
+      if(v && typeof v === "object" && !Array.isArray(v)) add(v, k);
+      else o[keyOf(k)] = v;
+    });
   }
   var rows = [], sum = 0;
   RK.forEach(function(k){

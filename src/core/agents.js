@@ -295,7 +295,10 @@ export function competitorCoreViolations(out, bb){
   ["pain","gain"].forEach(function(k){ if(!t6List5(d[k])) errs.push(k + " wajib array 5 teks."); });
   if(!Array.isArray(d.meja) || d.meja.length !== 7 || !d.meja.every(function(x){ return !!String(x == null ? "" : x).trim(); })) errs.push("meja wajib array 7 teks.");
   ["gender","usertitle","usia","usersub","segmen"].forEach(function(k){ if(!String(d[k] == null ? "" : d[k]).trim()) errs.push(k + " wajib diisi."); });
-  try { segScore(d.segmen_skor, null); } catch(e){ errs.push(e.message); }
+  try {
+    var q = segScore(d.segmen_skor, null);
+    if(!q || !q.rows || q.rows.length !== 7) errs.push("Skor segmen wajib tepat tujuh indikator.");
+  } catch(e){ errs.push(e.message); }
   return errs;
 }
 
